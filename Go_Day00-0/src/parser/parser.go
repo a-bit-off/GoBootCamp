@@ -9,11 +9,22 @@ import (
 )
 
 const (
-	MAX = 100000
-	MIN = -100000
+	MAX = 100000.00
+	MIN = -100000.00
 )
 
-func Parser(reader io.Reader) ([]float64, error) {
+// func ParseOrder(reader io.Reader) ([]int, error) {
+// 	order := make([]int, 0)
+// 	scanner := bufio.NewScanner(reader)
+
+// 	for scanner.Scan() {
+// 		text, err := scanner.Text(), scanner.Err()
+
+// 	}
+// 	return order, nil
+// }
+
+func ParserData(reader io.Reader) ([]float64, error) {
 	data := make([]float64, 0)
 	scanner := bufio.NewScanner(reader)
 

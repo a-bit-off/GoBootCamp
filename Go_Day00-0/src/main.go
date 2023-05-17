@@ -2,24 +2,56 @@ package main
 
 import (
 	"fmt"
+	"mean"
+	"median"
+	"mode"
 	"os"
 	p "parser"
+	"sd"
 )
 
-func main() {
+type Metrics struct {
+	mean   float64
+	median float64
+	mode   float64
+	sd     float64
+}
 
-	// read from file
-	if f, err := os.Open("./test/test.txt"); err == nil {
-		if num, err := p.Parser(f); err == nil {
-			fmt.Println(num)
-			fmt.Println(err)
+func main() {
+	metrics := Metrics{}
+	var option int = 1
+	var read *os.File
+
+	fmt.Println("0 - from file\n1 - from stdin")
+	fmt.Scanf("%d", &option)
+
+	if option == 0 {
+		if f, err := os.Open("./test/test.txt"); err == nil {
+			read = f // read from file
 		}
+	} else if option == 1 {
+		read = os.Stdin // read stdin
 	}
 
-	// read stdin
-	// if num, err := p.Parser(os.Stdin); err == nil {
-	// 	fmt.Println(num)
-	// 	fmt.Println(err)
-	// }
+	if data, err := p.ParserData(read); err == nil {
+		if metrics.mean, err = mean.Mean(data); err != nil {
+			fmt.Println(err)
+		}
 
+		if metrics.median, err = median.Median(data); err != nil {
+			fmt.Println(err)
+		}
+
+		if metrics.mode, err = mode.Mode(data); err != nil {
+			fmt.Println(err)
+		}
+
+		if metrics.sd, err = sd.SD(data); err != nil {
+			fmt.Println(err)
+		}
+		metrics.mean
+	} else {
+		fmt.Println(err)
+	}
+	fmt.Println(metrics)
 }
