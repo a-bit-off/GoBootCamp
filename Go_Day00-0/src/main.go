@@ -22,9 +22,6 @@ func main() {
 	var option int = 1
 	var read *os.File
 
-	fmt.Println("0 - from file\n1 - from stdin")
-	fmt.Scanf("%d", &option)
-
 	if option == 0 {
 		if f, err := os.Open("./test/test.txt"); err == nil {
 			read = f // read from file
@@ -33,25 +30,29 @@ func main() {
 		read = os.Stdin // read stdin
 	}
 
+	if order, err := p.ParseOrder(read); err == nil {
+		fmt.Println("order:", order)
+	} else {
+		fmt.Println("err:", err)
+
+	}
+
 	if data, err := p.ParserData(read); err == nil {
 		if metrics.mean, err = mean.Mean(data); err != nil {
 			fmt.Println(err)
 		}
-
 		if metrics.median, err = median.Median(data); err != nil {
 			fmt.Println(err)
 		}
-
 		if metrics.mode, err = mode.Mode(data); err != nil {
 			fmt.Println(err)
 		}
-
 		if metrics.sd, err = sd.SD(data); err != nil {
 			fmt.Println(err)
 		}
-		metrics.mean
 	} else {
 		fmt.Println(err)
 	}
+
 	fmt.Println(metrics)
 }

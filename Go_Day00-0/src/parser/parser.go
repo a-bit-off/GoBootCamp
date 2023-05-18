@@ -6,6 +6,7 @@ import (
 	"io"
 	"math"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -13,23 +14,28 @@ const (
 	MIN = -100000.00
 )
 
-// func ParseOrder(reader io.Reader) ([]int, error) {
-// 	order := make([]int, 0)
-// 	scanner := bufio.NewScanner(reader)
-
-// 	for scanner.Scan() {
-// 		text, err := scanner.Text(), scanner.Err()
-
-// 	}
-// 	return order, nil
-// }
+func ParseOrder(reader io.Reader) ([]int, error) {
+	in := bufio.NewScanner(reader)
+	in.Scan()
+	if err := in.Err(); err != nil {
+		return nil, err
+	}
+	order := make([]int, 0)
+	strSplit := strings.Split(in.Text(), " ")
+	for _, value := range strSplit {
+		if num, err := strconv.Atoi(value); err == nil {
+			order = append(order, num)
+		}
+	}
+	return order, nil
+}
 
 func ParserData(reader io.Reader) ([]float64, error) {
 	data := make([]float64, 0)
-	scanner := bufio.NewScanner(reader)
+	in := bufio.NewScanner(reader)
 
-	for scanner.Scan() {
-		text, err := scanner.Text(), scanner.Err()
+	for in.Scan() {
+		text, err := in.Text(), in.Err()
 		if err != nil {
 			return nil, err
 		} else if err == io.EOF {
