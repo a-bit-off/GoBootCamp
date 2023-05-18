@@ -19,40 +19,59 @@ type Metrics struct {
 
 func main() {
 	metrics := Metrics{}
-	var option int = 1
-	var read *os.File
-
-	if option == 0 {
-		if f, err := os.Open("./test/test.txt"); err == nil {
-			read = f // read from file
-		}
-	} else if option == 1 {
-		read = os.Stdin // read stdin
-	}
+	var read *os.File = os.Stdin
+	fmt.Print("Metrics:\n\tMean - 1\n\tMedian - 2\n\tMode - 3\n\tSD - 4\n\tDefault - enter\nChoose your metrics: ")
 
 	if order, err := p.ParseOrder(read); err == nil {
-		fmt.Println("order:", order)
-	} else {
-		fmt.Println("err:", err)
-
+		if data, err := p.ParserData(read); err == nil {
+			if metrics.mean, err = mean.Mean(data); err != nil {
+				fmt.Println(err)
+				return
+			}
+			if metrics.median, err = median.Median(data); err != nil {
+				fmt.Println(err)
+				return
+			}
+			if metrics.mode, err = mode.Mode(data); err != nil {
+				fmt.Println(err)
+				return
+			}
+			if metrics.sd, err = sd.SD(data); err != nil {
+				fmt.Println(err)
+				return
+			}
+		} else {
+			fmt.Println(err)
+			return
+		}
+		PrintRes(order, metrics)
 	}
+}
 
-	if data, err := p.ParserData(read); err == nil {
-		if metrics.mean, err = mean.Mean(data); err != nil {
-			fmt.Println(err)
+func PrintRes(order []int, metrics Metrics) {
+Loop:
+	for _, v := range order {
+		switch v {
+		case 1:
+			fmt.Printf("Mean: %.2f\n", metrics.mean)
+		case 2:
+			fmt.Printf("Media: %.2f\n", metrics.median)
+		case 3:
+			fmt.Printf("Mode: %.2f\n", metrics.mode)
+		case 4:
+			fmt.Printf("SD: %.2f\n", metrics.sd)
+		default:
+			fmt.Printf("Mean: %.2f\n", metrics.mean)
+			fmt.Printf("Media: %.2f\n", metrics.median)
+			fmt.Printf("Mode: %.2f\n", metrics.mode)
+			fmt.Printf("SD: %.2f\n", metrics.sd)
+			break Loop
 		}
-		if metrics.median, err = median.Median(data); err != nil {
-			fmt.Println(err)
-		}
-		if metrics.mode, err = mode.Mode(data); err != nil {
-			fmt.Println(err)
-		}
-		if metrics.sd, err = sd.SD(data); err != nil {
-			fmt.Println(err)
-		}
-	} else {
-		fmt.Println(err)
 	}
-
-	fmt.Println(metrics)
+	if len(order) == 0 {
+		fmt.Printf("Mean: %.2f\n", metrics.mean)
+		fmt.Printf("Media: %.2f\n", metrics.median)
+		fmt.Printf("Mode: %.2f\n", metrics.mode)
+		fmt.Printf("SD: %.2f\n", metrics.sd)
+	}
 }

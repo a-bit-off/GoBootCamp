@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"io"
-	"math"
 	"strconv"
 	"strings"
 )
@@ -51,7 +50,7 @@ func ParserData(reader io.Reader) ([]float64, error) {
 		if num > MAX || num < MIN {
 			return nil, errors.New("Out of range")
 		}
-		data = append(data, 0.01*math.Round(num*100))
+		data = append(data, num)
 	}
 	return data, nil
 }
