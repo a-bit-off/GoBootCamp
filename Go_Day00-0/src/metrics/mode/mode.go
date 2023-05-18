@@ -26,7 +26,7 @@ func Mode(data []float64) (float64, error) {
 			sec.count = 0
 			sec.value = data[i]
 		}
-		if base.count > base.count {
+		if sec.count > base.count {
 			base.count = sec.count
 			base.value = sec.value
 		}

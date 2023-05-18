@@ -7,7 +7,7 @@ import (
 func Mean(data []float64) (float64, error) {
 	l := len(data)
 	if l == 0 {
-		return 0, errors.New("Legnth is 0")
+		return 0, errors.New("Legnth is zero")
 	}
 	var sum float64
 	for i := 0; i < l; i++ {
