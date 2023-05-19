@@ -16,9 +16,8 @@
             <item>
                 <itemname>Strawberries</itemname>
                 <itemcount>7</itemcount>
-                <itemunit></itemunit> <!-- itemunit may be empty  -->
+                <itemunit></itemunit> 
             </item>
-            <!-- Here can be more ingredients  -->
         </ingredients>
     </cake>
     <cake>
@@ -40,8 +39,6 @@
                 <itemcount>1</itemcount>
                 <itemunit>cup</itemunit>
             </item>
-            <!-- Here can be more ingredients  -->
         </ingredients>
     </cake>
-    <!-- Here can be more cakes  -->
 </recipes>
