@@ -44,12 +44,11 @@ func main() {
 			fmt.Println(err)
 			return
 		}
-		PrintRes(order, metrics)
+		PrintResult(order, metrics)
 	}
 }
 
-func PrintRes(order []int, metrics Metrics) {
-Loop:
+func PrintResult(order []int, metrics Metrics) {
 	for _, v := range order {
 		switch v {
 		case 1:
@@ -61,11 +60,7 @@ Loop:
 		case 4:
 			fmt.Printf("SD: %.2f\n", metrics.sd)
 		default:
-			fmt.Printf("Mean: %.2f\n", metrics.mean)
-			fmt.Printf("Media: %.2f\n", metrics.median)
-			fmt.Printf("Mode: %.2f\n", metrics.mode)
-			fmt.Printf("SD: %.2f\n", metrics.sd)
-			break Loop
+			fmt.Printf("Metric №%d does not exist\n", v)
 		}
 	}
 	if len(order) == 0 {
