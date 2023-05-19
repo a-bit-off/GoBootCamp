@@ -1,9 +1,11 @@
 package MyXml
 
 import (
+	"bufio"
 	"encoding/xml"
 	"io"
 	"io/ioutil"
+	"os"
 )
 
 type Recipes struct {
@@ -38,10 +40,30 @@ func (r *Recipes) Parse(reader io.Reader) error {
 	return nil
 }
 
+// Convert to pretty-printing
 func (r *Recipes) ConvertPP() ([]byte, error) {
 	if byt, err := xml.MarshalIndent(r, "", "    "); err != nil {
 		return nil, err
 	} else {
 		return byt, nil
 	}
+}
+
+func (r *Recipes) WriteToAnotherFormat(data []byte) error {
+	file, err := os.Create("fromXmlTo.json")
+	defer file.Close()
+	if err != nil {
+		return err
+	}
+	writer := bufio.NewWriter(file)
+	_, err = writer.Write(data)
+	if err != nil {
+		return err
+	}
+	err = writer.Flush()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

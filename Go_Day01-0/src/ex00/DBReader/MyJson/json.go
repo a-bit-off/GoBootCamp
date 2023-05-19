@@ -1,9 +1,11 @@
 package MyJson
 
 import (
+	"bufio"
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"os"
 )
 
 type StolenDB struct {
@@ -33,11 +35,30 @@ func (s *StolenDB) Parse(reader io.Reader) error {
 	return nil
 }
 
-// Conver to pretty-printing
+// Convert to pretty-printing
 func (s *StolenDB) ConvertPP() ([]byte, error) {
 	if byt, err := json.MarshalIndent(s, "", "    "); err != nil {
 		return nil, err
 	} else {
 		return byt, nil
 	}
+}
+
+func (s *StolenDB) WriteToAnotherFormat(data []byte) error {
+	file, err := os.Create("fromJsonToXml.xml")
+	defer file.Close()
+	if err != nil {
+		return err
+	}
+	writer := bufio.NewWriter(file)
+	_, err = writer.Write(data)
+	if err != nil {
+		return err
+	}
+	err = writer.Flush()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
