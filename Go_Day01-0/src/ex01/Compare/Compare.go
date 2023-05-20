@@ -2,21 +2,22 @@ package Compare
 
 import (
 	"fmt"
-	"src/ex00/DBReader/MyXml"
+	"src/ex00/DBReader"
+	"src/ex00/DBReader/MyJson"
 )
 
 func Compare(fNameOld string, fNameNew string) error {
-	formatOld := MyXml.GetStruct()
+	formatOld := &MyJson.StolenDB{}
 	// formatNew, err := DBReader.ChooseFormat(newfName)
 	// if err != nil {
 	// 	return err
 	// }
-
 	if _, err := DBReader.ReadFile(fNameOld, formatOld); err != nil {
 		return err
 	}
+	fmt.Println(formatOld)
 
-	fmt.Println(formatOld.GetStruct())
+	// fmt.Println(formatOld.GetStruct())
 	// bytNew, err := DBReader.ReadFile(newfName, formatNew)
 	// if err != nil {
 	// 	return err
