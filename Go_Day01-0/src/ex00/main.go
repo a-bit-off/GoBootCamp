@@ -8,12 +8,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strings"
 )
 
 // ./DataBase/stolen_database.json
-// new.json
 // ./DataBase/original_database.xml
 
 func main() {
@@ -35,9 +35,16 @@ func main() {
 		return
 	}
 
-	// fmt.Println(string(byt))
-	err = WriteToFile(byt)
-	fmt.Println("err:", err)
+	fileName, err = ScanFileName(os.Stdin)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if err = ioutil.WriteFile(fileName, byt, 0644); err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 
 func ScanFileName(reader io.Reader) (string, error) {
@@ -70,60 +77,11 @@ func ReadFile(fileName string, format DBReader.DBReader) ([]byte, error) {
 	if err = format.Parse(file); err != nil {
 		return nil, err
 	}
+
 	byt, err := format.ConvertPP()
 	if err != nil {
 		return nil, err
 	}
+
 	return byt, nil
-}
-
-func WriteToFile(byt []byte) error {
-	fileName, err := ScanFileName(os.Stdin)
-	if err != nil {
-		return err
-	}
-
-	// Проверка наличия файла
-	_, err = os.Stat(fileName)
-	if err != nil {
-		if os.IsNotExist(err) {
-			// Файл не существует, создаем его
-			file, err := os.Create(fileName)
-			if err != nil {
-				return err
-			}
-			defer file.Close()
-
-			writer := bufio.NewWriter(file)
-			_, err = writer.Write(byt)
-			if err != nil {
-				return err
-			}
-			err = writer.Flush()
-			if err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
-	} else {
-		// Файл уже существует, открываем его для записи
-		file, err := os.OpenFile(fileName, os.O_WRONLY, 0644)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-
-		writer := bufio.NewWriter(file)
-		_, err = writer.Write(byt)
-		if err != nil {
-			return err
-		}
-		err = writer.Flush()
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

@@ -1,11 +1,9 @@
 package MyXml
 
 import (
-	"bufio"
 	"encoding/xml"
 	"io"
 	"io/ioutil"
-	"os"
 )
 
 type Recipes struct {
@@ -47,23 +45,4 @@ func (r *Recipes) ConvertPP() ([]byte, error) {
 	} else {
 		return byt, nil
 	}
-}
-
-func (r *Recipes) WriteToAnotherFormat(data []byte) error {
-	file, err := os.Create("fromXmlTo.json")
-	defer file.Close()
-	if err != nil {
-		return err
-	}
-	writer := bufio.NewWriter(file)
-	_, err = writer.Write(data)
-	if err != nil {
-		return err
-	}
-	err = writer.Flush()
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
