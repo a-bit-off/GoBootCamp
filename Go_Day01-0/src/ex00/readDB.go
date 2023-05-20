@@ -4,58 +4,51 @@ import (
 	"DBReader"
 	"MyJson"
 	"MyXml"
-	"bufio"
 	"errors"
+	"flag"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"strings"
 )
 
-// ./DataBase/stolen_database.json
-// ./DataBase/original_database.xml
-
 func main() {
-	fileName, err := ScanFileName(os.Stdin)
+	filePath, err := ParseFileName()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	format, err := ChooseFormat(fileName)
+	format, err := ChooseFormat(*filePath)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	byt, err := ReadFile(fileName, format)
+	byt, err := ReadFile(*filePath, format)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	fileName, err = ScanFileName(os.Stdin)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	if err = ioutil.WriteFile(fileName, byt, 0644); err != nil {
+	if err = WriteFileAnotherFormat(*filePath, byt); err != nil {
 		fmt.Println(err)
 		return
 	}
 }
 
-func ScanFileName(reader io.Reader) (string, error) {
-	fmt.Printf("Write your file path: ")
-	in := bufio.NewScanner(reader)
-	in.Scan()
-	fileName, err := in.Text(), in.Err()
-	if err != nil {
-		return fileName, err
+func ParseFileName() (*string, error) {
+	var pathDB = "./DataBase/"
+	filePath := flag.String("f", "", "File path")
+	flag.Parse()
+
+	pathDB += *filePath
+	*filePath = pathDB
+
+	if *filePath == "" {
+		return nil, errors.New("File path not specified")
 	}
-	return fileName, nil
+	return filePath, nil
 }
 
 func ChooseFormat(fileName string) (DBReader.DBReader, error) {
@@ -84,4 +77,18 @@ func ReadFile(fileName string, format DBReader.DBReader) ([]byte, error) {
 	}
 
 	return byt, nil
+}
+
+func WriteFileAnotherFormat(filePath string, byt []byte) error {
+	var outFileName string
+	if strings.HasSuffix(filePath, ".json") {
+		outFileName = "out.xml"
+	} else if strings.HasSuffix(filePath, ".xml") {
+		outFileName = "out.json"
+	}
+
+	if err := ioutil.WriteFile(outFileName, byt, 0644); err != nil {
+		return err
+	}
+	return nil
 }
