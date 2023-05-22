@@ -1,14 +1,11 @@
 package main
 
 import (
-	"DBReader"
-	"MyJson"
-	"MyXml"
 	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"os"
+	"src/ex00/DBReader"
 	"strings"
 )
 
@@ -19,13 +16,13 @@ func main() {
 		return
 	}
 
-	format, err := ChooseFormat(*filePath)
+	format, err := DBReader.ChooseFormat(*filePath)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	byt, err := ReadFile(*filePath, format)
+	byt, err := DBReader.ReadFile(*filePath, format)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -38,7 +35,7 @@ func main() {
 }
 
 func ParseFileName() (*string, error) {
-	var pathDB = "./DataBase/"
+	var pathDB = "../DataBase/"
 	filePath := flag.String("f", "", "File path")
 	flag.Parse()
 
@@ -49,34 +46,6 @@ func ParseFileName() (*string, error) {
 		return nil, errors.New("File path not specified")
 	}
 	return filePath, nil
-}
-
-func ChooseFormat(fileName string) (DBReader.DBReader, error) {
-	if strings.HasSuffix(fileName, ".json") {
-		return &MyJson.StolenDB{}, nil
-	} else if strings.HasSuffix(fileName, ".xml") {
-		return &MyXml.Recipes{}, nil
-	}
-	return nil, errors.New("Unknown format")
-}
-
-func ReadFile(fileName string, format DBReader.DBReader) ([]byte, error) {
-	file, err := os.Open(fileName)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	if err = format.Parse(file); err != nil {
-		return nil, err
-	}
-
-	byt, err := format.ConvertPP()
-	if err != nil {
-		return nil, err
-	}
-
-	return byt, nil
 }
 
 func WriteFileAnotherFormat(filePath string, byt []byte) error {

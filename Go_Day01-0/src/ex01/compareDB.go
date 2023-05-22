@@ -1,10 +1,9 @@
 package main
 
 import (
+	"ex01/Compare"
 	"flag"
 	"fmt"
-
-	"src/ex01/Compare"
 )
 
 func main() {
@@ -15,5 +14,11 @@ func main() {
 		fmt.Println("File path not specified")
 		return
 	}
-	Compare.Compare("../DataBase/"+*fOld, "../DataBase/"+*fNew)
+	diffFeilds, err := Compare.Compare("./DataBase/"+*fOld, "./DataBase/"+*fNew)
+	if err != nil {
+		fmt.Println(err)
+	}
+	for _, s := range diffFeilds {
+		fmt.Println(s)
+	}
 }
