@@ -2,10 +2,10 @@ package main
 
 import (
 	"errors"
+	"ex00/DBReader"
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"src/ex00/DBReader"
 	"strings"
 )
 
@@ -35,12 +35,8 @@ func main() {
 }
 
 func ParseFileName() (*string, error) {
-	var pathDB = "../DataBase/"
 	filePath := flag.String("f", "", "File path")
 	flag.Parse()
-
-	pathDB += *filePath
-	*filePath = pathDB
 
 	if *filePath == "" {
 		return nil, errors.New("File path not specified")

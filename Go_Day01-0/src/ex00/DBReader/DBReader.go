@@ -5,8 +5,8 @@ import (
 	"io"
 	"os"
 
-	"src/ex00/DBReader/MyJson"
-	"src/ex00/DBReader/MyXml"
+	"ex00/DBReader/MyJson"
+	"ex00/DBReader/MyXml"
 
 	"strings"
 )
