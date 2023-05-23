@@ -14,7 +14,7 @@ func main() {
 		fmt.Println("File path not specified")
 		return
 	}
-	diffFeilds, err := Compare.Compare("./DataBase/"+*fOld, "./DataBase/"+*fNew)
+	diffFeilds, err := Compare.Compare(*fOld, *fNew)
 	if err != nil {
 		fmt.Println(err)
 	}
