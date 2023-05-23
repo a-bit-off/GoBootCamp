@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
+	"time"
 )
 
 type Data struct {
@@ -21,12 +23,15 @@ func main() {
 	} else if err := FlagCompatibility(data); err != nil {
 		fmt.Println(err)
 	} else {
-		channel := make(chan int)
-		go WordCountGorutine(data, channel)
-		fileCount := 0
-		for ch := range channel {
-			fmt.Println(ch, "\t", data.paths[fileCount])
-			fileCount++
+		var mu sync.Mutex
+		res := make([]int, 0)
+		for i := 0; i < len(data.paths); i++ {
+			go WordCount(data, i, mu, &res)
+		}
+
+		time.Sleep(1 * time.Second)
+		for _, count := range res {
+			fmt.Println(count)
 		}
 	}
 }
@@ -57,14 +62,8 @@ func FlagCompatibility(data Data) error {
 	return nil
 }
 
-func WordCountGorutine(data Data, channel chan int) {
-	for i := 0; i < len(data.paths); i++ {
-		WordCount(data, i, channel)
-	}
-	close(channel)
-}
+func WordCount(data Data, fileNameIndex int, mu sync.Mutex, res *[]int) {
 
-func WordCount(data Data, fileNameIndex int, channel chan int) {
 	// open file
 	file, err := os.Open(data.paths[fileNameIndex])
 	if err != nil {
@@ -88,5 +87,7 @@ func WordCount(data Data, fileNameIndex int, channel chan int) {
 			count += len(strings.Split(in.Text(), " "))
 		}
 	}
-	channel <- count
+	mu.Lock()
+	*res = append(*res, count)
+	mu.Unlock()
 }
