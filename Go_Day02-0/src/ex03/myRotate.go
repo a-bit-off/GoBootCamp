@@ -29,15 +29,15 @@ func main() {
 		fileNames = fileNames[1:]
 	}
 	var wg sync.WaitGroup
-	for _, name := range fileNames {
+	for _, fn := range fileNames {
 		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		go func(name string) {
 			err := createArchive(name, archiveFileName)
 			if err != nil {
 				fmt.Println(err)
 			}
-		}()
+			wg.Done()
+		}(fn)
 	}
 	wg.Wait()
 }
