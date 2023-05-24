@@ -16,12 +16,15 @@ type Data struct {
 }
 
 func main() {
-	d, _ := Parse()
-	if err := FlagCompatibility(&d); err != nil {
+	data, err := Parse()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	if err := FlagCompatibility(&data); err != nil {
 		fmt.Println(err)
 	} else {
-		fmt.Println(d)
-		Find(d)
+		MyFind(data)
 	}
 }
 
@@ -33,6 +36,9 @@ func Parse() (Data, error) {
 
 	flag.Parse()
 	data := Data{d: *d, f: *f, sl: *sl, ext: *ext, path: os.Args[len(os.Args)-1]}
+	if len(os.Args) == 1 {
+		return data, errors.New("Missing file path")
+	}
 	return data, nil
 }
 
@@ -46,14 +52,14 @@ func FlagCompatibility(data *Data) error {
 	return nil
 }
 
-func Find(data Data) ([]string, error) {
+func MyFind(data Data) ([]string, error) {
 	findPaths := make([]string, 0)
 	err := filepath.Walk(data.path,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
-			if data.f && !info.IsDir() {
+			if data.f && !info.IsDir() && info.Mode().Type() != os.ModeSymlink {
 				if data.ext != "" {
 					if strings.HasSuffix(path, "."+data.ext) {
 						fmt.Println(path)
@@ -62,7 +68,7 @@ func Find(data Data) ([]string, error) {
 					fmt.Println(path)
 				}
 			}
-			if data.d && info.IsDir() {
+			if data.d && info.IsDir() && info.Mode().Type() != os.ModeSymlink {
 				fmt.Println(path)
 			}
 			if data.sl && info.Mode().Type() == os.ModeSymlink {

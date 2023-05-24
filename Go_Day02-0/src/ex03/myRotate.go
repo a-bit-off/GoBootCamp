@@ -100,7 +100,7 @@ func addToArchive(tw *tar.Writer, file *os.File) error {
 		return err
 	}
 
-	// Копирование содержимое файла в tar-архив
+	// Копирование содержимого файла в tar-архив
 	_, err = io.Copy(tw, file)
 	if err != nil {
 		return err

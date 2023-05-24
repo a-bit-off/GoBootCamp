@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 	"sync"
-	"time"
+	"unicode/utf8"
 )
 
 type Data struct {
@@ -20,19 +20,25 @@ func main() {
 	data, err := Parse()
 	if err != nil {
 		fmt.Println(err)
+		return
 	} else if err := FlagCompatibility(data); err != nil {
 		fmt.Println(err)
-	} else {
-		var mu sync.Mutex
-		res := make([]int, 0)
-		for i := 0; i < len(data.paths); i++ {
-			go WordCount(data, i, mu, &res)
-		}
+		return
+	}
 
-		time.Sleep(1 * time.Second)
-		for _, count := range res {
-			fmt.Println(count)
-		}
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	res := make([]string, 0)
+	for i := 0; i < len(data.paths); i++ {
+		wg.Add(1)
+		go func(k int) {
+			defer wg.Done()
+			MyWC(data, k, &mu, &res)
+		}(i)
+	}
+	wg.Wait()
+	for _, r := range res {
+		fmt.Println(r)
 	}
 }
 
@@ -62,32 +68,32 @@ func FlagCompatibility(data Data) error {
 	return nil
 }
 
-func WordCount(data Data, fileNameIndex int, mu sync.Mutex, res *[]int) {
-
-	// open file
+func MyWC(data Data, fileNameIndex int, mu *sync.Mutex, res *[]string) {
 	file, err := os.Open(data.paths[fileNameIndex])
 	if err != nil {
 		fmt.Println(err)
 	}
 	defer file.Close()
 
-	// scan file
-	var count int
+	count := 0
 	in := bufio.NewScanner(file)
 	for in.Scan() {
 		if err := in.Err(); err != nil {
 			fmt.Println(err)
 		}
-		// count flag
 		if data.l {
 			count++
 		} else if data.m {
-			count += len(in.Text())
+			count += utf8.RuneCountInString(in.Text()) + 1
 		} else {
 			count += len(strings.Split(in.Text(), " "))
 		}
 	}
+	if count != 0 && (data.l || data.m) {
+		count--
+	}
+
 	mu.Lock()
-	*res = append(*res, count)
+	*res = append(*res, fmt.Sprintf("%d\t%s", count, data.paths[fileNameIndex]))
 	mu.Unlock()
 }
