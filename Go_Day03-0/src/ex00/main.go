@@ -1,11 +1,12 @@
-package main
+package NOTmain
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
+	"strconv"
 
+	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/grailbio/base/tsv"
 	"github.com/olivere/elastic"
 )
@@ -46,18 +47,36 @@ type Location struct {
 }
 
 func main() {
-	pathToDataSets := flag.String("dSet", "../../materials/data.csv", "path to csv file")
+	pathToDataSets := flag.String("dSet", "../../materials/dataTest.csv", "path to csv file")
 	flag.Parse()
-	dataSet, err := getDataSet(*pathToDataSets)
+
+	// Парсим csv файл
+	dataSet, err := Parse(*pathToDataSets)
 	if err != nil {
 		log.Fatal(err)
 	}
-	for _, ds := range dataSet {
-		fmt.Println(ds)
-	}
+
+	WorkWithElasticsearch()
 }
 
-func getDataSet(fileCSV string) ([][]string, error) {
+func WorkWithElasticsearch() error {
+	// создание нового клиента
+	es, err := elasticsearch.NewDefaultClient()
+	if err != nil {
+		return err
+	}
+
+	// создание индекса API
+	res, err := es.Indices.Create("places")
+	if err != nil {
+		return err
+	}
+	res.Body.Close()
+	res
+	return nil
+}
+
+func Parse(fileCSV string) ([][]string, error) {
 	file, err := os.Open(fileCSV)
 	if err != nil {
 		return nil, err
@@ -73,4 +92,17 @@ func getDataSet(fileCSV string) ([][]string, error) {
 	}
 	// data = data[:][:]
 	return data, nil
+}
+
+func setData(data []string) Doc {
+	id, _ := strconv.Atoi(data[0])
+	lon, _ := strconv.ParseFloat(data[4], 64)
+	lat, _ := strconv.ParseFloat(data[5], 64)
+	return Doc{
+		ID:       id,
+		Name:     data[1],
+		Address:  data[2],
+		Phone:    data[3],
+		Location: elastic.GeoPoint{Lon: lon, Lat: lat},
+	}
 }
