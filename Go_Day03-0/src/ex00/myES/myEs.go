@@ -1,12 +1,22 @@
-package main
+/*
+Пакет myES считывает данные из CSV-файла,
+создает клиент Elasticsearch с настройками по умолчанию,
+создает индекс с необходимой схемой
+и загружает данные в индекс
+
+На вход принимает:
+
+	dataSetPath: путь к csv файлу
+	indexName: название индекса
+	dataCount: количество данных необходимых для загрузки
+*/
+package myES
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -40,37 +50,49 @@ type FieldType struct {
 	Type string `json:"type"`
 }
 
-func main() {
-	dataSetPath := flag.String("dataSetPath", "../../materials/data.csv", "path to csv file")
-	indexName := flag.String("indexName", "places", "index name")
-	dataCount := flag.Int("dataCount", 0, "number of data entries to upload")
-
-	flag.Parse()
-
-	dataSet, err := readDataSet(*dataSetPath)
+func MyES(dataSetPath, indexName string, dataCount int) error {
+	dataSet, err := readDataSet(dataSetPath)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
+	// Установливаем соединение с сервером Elasticsearch.
+	/*
+		Натройки по умолчанию включают:
+		1. Адрес сервера Elasticsearch: По умолчанию клиент
+		настроен на подключение к серверу Elasticsearch,
+		работающему на локальной машине (localhost:9200).
+		2. Режим подключения: Клиент устанавливает соединение
+		с сервером Elasticsearch в режиме HTTP.
+		3. Таймауты: Установлены значения таймаутов для запросов
+		к серверу Elasticsearch. По умолчанию установлен таймаут
+		в 1 минуту для большинства операций.
+		4. Журналирование: Клиент выводит журнальные сообщения,
+		которые могут быть полезными для отладки и мониторинга.
+		5. Ретрисы: Клиент автоматически выполняет повторные попытки
+		при определенных ошибках, таких как проблемы с подключением
+		или таймауты.
+	*/
 	es, err := elasticsearch.NewDefaultClient()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	if err := createIndexWithMapping(es, *indexName); err != nil {
-		log.Fatal(err)
+	if err := createIndexWithMapping(es, indexName); err != nil {
+		return err
 	}
-	fmt.Println("*dataCount:", *dataCount)
-	if *dataCount == 0 {
-		*dataCount = len(dataSet)
-	}
-	fmt.Println("*dataCount:", *dataCount)
 
-	if err := uploadDataToIndex(es, *indexName, dataSet, *dataCount); err != nil {
-		log.Fatal(err)
+	if dataCount == 0 {
+		dataCount = len(dataSet)
 	}
+
+	if err := uploadDataToIndex(es, indexName, dataSet, dataCount); err != nil {
+		return err
+	}
+	return nil
 }
 
+// Читает с CSV-файла.
 func readDataSet(filePath string) ([][]string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -87,6 +109,7 @@ func readDataSet(filePath string) ([][]string, error) {
 	return data, nil
 }
 
+// Создает индекс Elasticsearch с соответствующей схемой.
 func createIndexWithMapping(es *elasticsearch.Client, indexName string) error {
 	var buf bytes.Buffer
 	mapping := IndexMapping{
@@ -97,7 +120,6 @@ func createIndexWithMapping(es *elasticsearch.Client, indexName string) error {
 			Location: FieldType{Type: "geo_point"},
 		},
 	}
-
 	if err := json.NewEncoder(&buf).Encode(mapping); err != nil {
 		return err
 	}
@@ -115,6 +137,7 @@ func createIndexWithMapping(es *elasticsearch.Client, indexName string) error {
 	return nil
 }
 
+// Загружает данные в индекс Elasticsearch.
 func uploadDataToIndex(es *elasticsearch.Client, indexName string, dataSet [][]string, dataCount int) error {
 	for i := 0; i < dataCount; i++ {
 		place := createPlace(dataSet[i])
@@ -122,15 +145,16 @@ func uploadDataToIndex(es *elasticsearch.Client, indexName string, dataSet [][]s
 		if err != nil {
 			return err
 		}
-
+		// запрос на индексацию в Elasticsearch
 		request := esapi.IndexRequest{
 			Index:        indexName,
-			DocumentID:   strconv.Itoa(i + 1),
+			DocumentID:   strconv.Itoa(i),
 			DocumentType: "place",
 			Body:         bytes.NewReader(jsonData),
 			Refresh:      "true",
 		}
 
+		// выполняем запрос на индексацию
 		response, err := request.Do(context.Background(), es)
 		if err != nil {
 			return err
@@ -147,6 +171,7 @@ func uploadDataToIndex(es *elasticsearch.Client, indexName string, dataSet [][]s
 	return nil
 }
 
+// Создает объект Place на основе данных из набора данных.
 func createPlace(data []string) Place {
 	id, _ := strconv.Atoi(data[0])
 	lon, _ := strconv.ParseFloat(data[4], 64)
