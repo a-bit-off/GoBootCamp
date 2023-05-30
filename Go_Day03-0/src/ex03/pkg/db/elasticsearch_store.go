@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strconv"
 
 	"github.com/elastic/go-elasticsearch/v7"
@@ -16,10 +15,11 @@ import (
 type SortJson struct {
 	Sort []Sort `json:"sort"`
 }
-type Location struct {
-	Lat float64 `json:"lat"`
-	Lon float64 `json:"lon"`
+
+type Sort struct {
+	GeoDistance GeoDistance `json:"_geo_distance"`
 }
+
 type GeoDistance struct {
 	Location       elastic.GeoPoint `json:"location"`
 	Order          string           `json:"order"`
@@ -28,13 +28,10 @@ type GeoDistance struct {
 	DistanceType   string           `json:"distance_type"`
 	IgnoreUnmapped bool             `json:"ignore_unmapped"`
 }
-type Sort struct {
-	GeoDistance GeoDistance `json:"_geo_distance"`
-}
 
-type Geo struct {
-	Lat float64
-	Lon float64
+type Location struct {
+	Lat float64 `json:"lat"`
+	Lon float64 `json:"lon"`
 }
 
 type Place struct {
@@ -130,124 +127,7 @@ func (p *Types) UnmarshalJSON(data []byte) error {
 	}
 	for _, v := range tmpl.Hits.Hits {
 		p.Places = append(p.Places, v.Source)
-		fmt.Println(v.Source.Location.Lon, v.Source.Location.Lat)
 	}
 
 	return nil
 }
-
-// package db
-
-// import (
-// 	"bytes"
-// 	"context"
-// 	"encoding/json"
-// 	"errors"
-// 	"fmt"
-// 	"strconv"
-
-// 	"github.com/elastic/go-elasticsearch/v7"
-// 	"github.com/elastic/go-elasticsearch/v7/esapi"
-// 	"github.com/olivere/elastic"
-// )
-
-// type ElasticsearchStore struct {
-// 	esClient *elasticsearch.Client
-// 	index    string
-// }
-
-// type SortJson struct {
-// 	Sort []Sort `json:"sort"`
-// }
-// type Location struct {
-// 	Lat float64 `json:"lat"`
-// 	Lon float64 `json:"lon"`
-// }
-// type GeoDistance struct {
-// 	Location       elastic.GeoPoint `json:"location"`
-// 	Order          string           `json:"order"`
-// 	Unit           string           `json:"unit"`
-// 	Mode           string           `json:"mode"`
-// 	DistanceType   string           `json:"distance_type"`
-// 	IgnoreUnmapped bool             `json:"ignore_unmapped"`
-// }
-// type Sort struct {
-// 	GeoDistance GeoDistance `json:"_geo_distance"`
-// }
-
-// type Geo struct {
-// 	Lat float64
-// 	Lon float64
-// }
-
-// type Types struct {
-// 	Places []Place `json:"_source"`
-// }
-
-// type Place struct {
-// 	ID       int              `json:"id"`
-// 	Name     string           `json:"name"`
-// 	Address  string           `json:"address"`
-// 	Phone    string           `json:"phone"`
-// 	Location elastic.GeoPoint `json:"location"`
-// }
-
-// func NewElasticsearchStore(esClient *elasticsearch.Client, index string) *ElasticsearchStore {
-// 	return &ElasticsearchStore{
-// 		esClient: esClient,
-// 		index:    index,
-// 	}
-// }
-
-// func (store *ElasticsearchStore) GetPlaces(limit int, latStr string, lonStr string) ([]Place, error) {
-// 	if latStr == "" || lonStr == "" {
-// 		return nil, errors.New("Empty lat / lon")
-// 	}
-
-// 	lat, err := strconv.ParseFloat(latStr, 64)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	lon, err := strconv.ParseFloat(lonStr, 64)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	sort := SortJson{Sort: []Sort{{
-// 		GeoDistance{
-// 			Location:       elastic.GeoPoint(Location{Lon: lon, Lat: lat}),
-// 			Order:          "asc",
-// 			Unit:           "km",
-// 			Mode:           "min",
-// 			DistanceType:   "arc",
-// 			IgnoreUnmapped: true,
-// 		},
-// 	}}}
-
-// 	var buf bytes.Buffer
-// 	if err = json.NewEncoder(&buf).Encode(sort); err != nil {
-// 		return nil, err
-// 	}
-
-// 	req := esapi.SearchRequest{
-// 		Index:        []string{"places"},
-// 		DocumentType: []string{"place"},
-// 		Size:         &limit,
-// 		Body:         &buf,
-// 	}
-// 	res, err := req.Do(context.Background(), store.esClient)
-// 	defer res.Body.Close()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	fmt.Println(lat, lon)
-// 	fmt.Println(res.Body)
-
-// 	var t Types
-// 	if err = json.NewDecoder(res.Body).Decode(&t); err != nil {
-// 		return nil, err
-// 	}
-// 	fmt.Println(t)
-// 	return nil, nil
-// }
