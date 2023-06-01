@@ -17,13 +17,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
 
+	"github.com/grailbio/base/tsv"
+
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
-	"github.com/grailbio/base/tsv"
 	"github.com/olivere/elastic"
 )
 
@@ -164,8 +166,7 @@ func uploadDataToIndex(es *elasticsearch.Client, indexName string, dataSet [][]s
 		if response.IsError() {
 			return fmt.Errorf("error indexing document: %s", response.Status())
 		}
-
-		fmt.Println("Status:", response.Status())
+		log.Println("Status:", response.Status())
 	}
 
 	return nil

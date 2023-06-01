@@ -55,7 +55,6 @@ func (p *Types) GetPlaces(limit int, lat string, lon string) ([]Place, error) {
 	if lat == "" || lon == "" {
 		return nil, errors.New("Empty lat and lon")
 	}
-
 	es, err := elasticsearch.NewDefaultClient()
 	if err != nil {
 		return nil, err
