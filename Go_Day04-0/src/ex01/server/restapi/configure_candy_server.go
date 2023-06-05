@@ -56,26 +56,17 @@ func configureAPI(api *operations.CandyServerAPI) http.Handler {
 
 // The TLS configuration before HTTPS server starts.
 func configureTLS(tlsConfig *tls.Config) {
-	// Make all necessary changes to the TLS configuration here.
-
-	// читаем корневой сертификат
-	mainCo, err := ioutil.ReadFile("../ca/minica/minica.pem")
+	data, err := ioutil.ReadFile("../../ca/minica.pem")
 	if err != nil {
 		log.Println(err)
 	}
-
-	// создается пул сертификатов
-	coPool, err := x509.SystemCertPool()
+	cp, err := x509.SystemCertPool()
 	if err != nil {
 		log.Println(err)
 	}
-	// добавляем сертификат в пул
-	coPool.AppendCertsFromPEM(mainCo)
-
-	// получаем клиентский сертификат и ключ
-	tlsConfig.GetCertificate = utils.CertReqFunc("../ca/minica/server/cert.pem", "../ca/minica/server/key.pem")
-
-	// настройка проверки цепочки сертификатов
+	cp.AppendCertsFromPEM(data)
+	tlsConfig.ClientCAs = cp
+	tlsConfig.GetCertificate = utils.CertReqFunc("../../ca/server/cert.pem", "../../ca/server/key.pem")
 	tlsConfig.VerifyPeerCertificate = utils.CertificateChains
 
 }

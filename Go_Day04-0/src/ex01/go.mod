@@ -11,7 +11,7 @@ require (
 	github.com/go-openapi/swag v0.22.3
 	github.com/go-openapi/validate v0.22.1
 	github.com/jessevdk/go-flags v1.5.0
-	github.com/spf13/pflag v1.0.3
+	github.com/lizrice/secure-connections v0.0.0-20181003132801-0f21099c1edf
 	golang.org/x/net v0.10.0
 )
 
@@ -25,7 +25,6 @@ require (
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
-	github.com/lizrice/secure-connections v0.0.0-20181003132801-0f21099c1edf // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect

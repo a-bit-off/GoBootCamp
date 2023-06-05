@@ -1,3 +1,6 @@
+/*
+server
+*/
 package main
 
 import (
@@ -57,11 +60,13 @@ func main() {
 	// Затем создается экземпляр сервера NewServer с использованием созданного API.
 	// Отложенный вызов server.Shutdown() гарантирует, что сервер будет корректно остановлен при выходе из функции main
 	api := operations.NewCandyServerAPI(swaggerSpec)
+
 	server := restapi.NewServer(api)
 	defer server.Shutdown()
 
-	server.Host = "127.0.0.1"
-	server.Port = 3333
+	// TLS conection
+	server.TLSHost = "127.0.0.1"
+	server.TLSPort = 3333
 
 	// обработка request
 	api.BuyCandyHandler = operations.BuyCandyHandlerFunc(
