@@ -11,8 +11,9 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
 
-	"ex01/server/restapi"
-	"ex01/server/restapi/operations"
+	"ex02/server/pkg/cow"
+	"ex02/server/restapi"
+	"ex02/server/restapi/operations"
 )
 
 type CandyRequest struct {
@@ -98,7 +99,7 @@ func main() {
 			return operations.NewBuyCandyCreated().WithPayload(
 				&operations.BuyCandyCreatedBody{
 					Change: change,
-					Thanks: fmt.Sprintf("Thank you!"),
+					Thanks: cow.AskCow(),
 				})
 		})
 
