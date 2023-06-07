@@ -26,13 +26,12 @@ func main() {
 func describePlant(plant any) {
 	t := reflect.TypeOf(plant)
 	v := reflect.ValueOf(plant)
-	fmt.Println(t)
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
 		tag := ""
 		if string(f.Tag) != "" {
 			tag += "(" + string(f.Tag) + ")"
 		}
-		fmt.Println(f.Name, tag, ":", v.Field(i))
+		fmt.Println(f.Name+tag+":", v.Field(i))
 	}
 }
