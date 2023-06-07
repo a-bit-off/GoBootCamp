@@ -1,43 +1,45 @@
 package main
 
 import (
-	"ex03/myheap"
+	"ex03/pkg/combine"
+	"ex03/pkg/myheap"
 	"fmt"
 )
 
 func main() {
 	presents := []myheap.Present{{5, 1}, {4, 5}, {3, 1}, {5, 2}}
-	if res, err := grabPresents(presents, 6); err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println(res)
+	for i := 0; i < 15; i++ {
+		if res, err := grabPresents(presents, i); err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Printf("Knapsack: %d\t->\t%d\n", i, res)
+		}
 	}
 }
 
 func grabPresents(presents []myheap.Present, maxSize int) ([]myheap.Present, error) {
-	lenPres := len(presents)
-	matrix := make([][]int, 0, lenPres)
-	// цикл по количеству предметов
-	for i := 0; i < lenPres; i++ {
-		present := presents[i]
-		mat := make([]int, 0, maxSize)
-		// цикл по размеру рюкзака
-		for j := 0; j < maxSize; j++ {
-			// если пред помещается то мы кладем его
-			if j >= present.Size {
-				mat = append(mat, present.Value)
-			} else {
-				mat = append(mat, 0)
+	combinations := combine.GenerateCombinations(len(presents))
+	var winCombination []int
+	maxValue := 0
+
+	for _, combination := range combinations {
+		size, value := 0, 0
+		for i := 0; i < len(combination); i++ {
+			value += presents[combination[i]-1].Value
+			size += presents[combination[i]-1].Size
+		}
+		if size <= maxSize {
+			if maxValue < value {
+				maxValue = value
+				winCombination = combination
 			}
 		}
-		matrix = append(matrix, mat)
 	}
-	print(matrix)
-	return nil, nil
-}
 
-func print(matrix [][]int) {
-	for _, m := range matrix {
-		fmt.Println(m)
+	lWin := len(winCombination)
+	res := make([]myheap.Present, lWin)
+	for i := 0; i < lWin; i++ {
+		res[i] = presents[winCombination[i]-1]
 	}
+	return res, nil
 }
