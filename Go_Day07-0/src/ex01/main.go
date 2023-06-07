@@ -22,6 +22,11 @@ func minCoins(val int, coins []int) []int {
 
 func minCoins2(val int, coins []int) []int {
 	res := make([]int, 0)
+
+	if len(coins) <= 0 || val <= 0 {
+		return res
+	}
+
 	sort.SliceStable(coins, func(i, j int) bool {
 		return coins[i] > coins[j]
 	})
@@ -32,7 +37,7 @@ func minCoins2(val int, coins []int) []int {
 			val -= c
 		}
 		if val == 0 {
-			break
+			return res
 		}
 	}
 
