@@ -14,11 +14,11 @@ type AdminData struct {
 	Password string `json:"password"`
 }
 
-var baseURL = "http://localhost:8888/admin"
+var baseURL = "http://localhost:8888/admin/sign-in"
 
 func main() {
 	// create new Admin
-	a1 := AdminData{"a5", "5"}
+	a1 := AdminData{"a9", "9"}
 
 	// encode a1 to bytes
 	var data bytes.Buffer
