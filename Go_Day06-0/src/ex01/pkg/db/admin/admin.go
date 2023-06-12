@@ -1,6 +1,6 @@
 /*
-Пакет admins отвечает за регистрацию и авторизацию пользователей
-Сохраняет данные в бд Admins
+Пакет admin отвечает за регистрацию и авторизацию пользователей
+Сохраняет данные в бд AdminTable
 
 Методы:
 
@@ -11,7 +11,7 @@
 
 	Ошибку при некорректных входных данных или при некорректном соединении с бд
 */
-package admins
+package admin
 
 import (
 	"database/sql"
@@ -26,7 +26,7 @@ const (
 	host   = "localhost"
 	port   = 5432
 	user   = "postgres"
-	dbname = "Admins"
+	dbname = "AdminDB"
 )
 
 // данные пользователя
@@ -42,7 +42,7 @@ func (a AdminData) SignUpAdmin() error {
 	if err != nil {
 		return err
 	}
-	err = a.createAdminsTable()
+	err = a.createAdminTable()
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (a AdminData) SignUpAdmin() error {
 		}
 	}
 
-	err = a.insertAdminsTable()
+	err = a.insertAdmin()
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (a AdminData) SignInAdmin() error {
 	if err != nil {
 		return err
 	}
-	err = a.createAdminsTable()
+	err = a.createAdminTable()
 	if err != nil {
 		return err
 	}
@@ -104,9 +104,9 @@ func (a *AdminData) connectToPostgreSQL() error {
 }
 
 // создание таблицы
-func (a AdminData) createAdminsTable() error {
+func (a AdminData) createAdminTable() error {
 	createTableQuery := `
-	CREATE TABLE IF NOT EXISTS admins (
+	CREATE TABLE IF NOT EXISTS AdminTable (
 		id SERIAL PRIMARY KEY,
 		login VARCHAR(50),
 		password VARCHAR(50)
@@ -123,7 +123,7 @@ func (a AdminData) createAdminsTable() error {
 // проверка логина на уникальность
 func (a *AdminData) loginUniqueness() (bool, error) {
 	loginUniquenessQuery := `
-		SELECT login FROM admins
+		SELECT login FROM AdminTable
 		WHERE login = $1
 	`
 	req, err := a.db.Exec(loginUniquenessQuery, a.Login)
@@ -140,9 +140,9 @@ func (a *AdminData) loginUniqueness() (bool, error) {
 }
 
 // добавление нового пользователя в таблицу
-func (a AdminData) insertAdminsTable() error {
+func (a AdminData) insertAdmin() error {
 	insertDataQuery := `
-		INSERT INTO admins (login, password) VALUES ($1, $2)
+		INSERT INTO AdminTable (login, password) VALUES ($1, $2)
 	`
 	_, err := a.db.Exec(insertDataQuery, a.Login, a.Password)
 	if err != nil {
