@@ -1,4 +1,4 @@
-package users
+package admins
 
 import (
 	"database/sql"
@@ -14,20 +14,16 @@ const (
 	dbname = "Admins"
 )
 
-type UserData struct {
+type AdminData struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
 }
 
-func AddNewUser(newUser UserData) {
+func AddNewAdmin(newAdmin AdminData) {
 	db := connectToPostgreSQL()
 	createUsersTable(db)
-	insertUsersTable(db, newUser)
+	insertUsersTable(db, newAdmin)
 	closeDB(db)
-}
-
-func closeDB(db *sql.DB) {
-	db.Close()
 }
 
 func connectToPostgreSQL() *sql.DB {
@@ -54,11 +50,11 @@ func createUsersTable(db *sql.DB) {
 	checkError(err)
 }
 
-func insertUsersTable(db *sql.DB, newUser UserData) {
+func insertUsersTable(db *sql.DB, newAdmin AdminData) {
 	insertDataQuery := `
 		INSERT INTO Users (login, password) VALUES ($1, $2)
 	`
-	_, err := db.Exec(insertDataQuery, newUser.Name, newUser.Password)
+	_, err := db.Exec(insertDataQuery, newAdmin.Name, newAdmin.Password)
 	checkError(err)
 }
 
@@ -66,4 +62,8 @@ func checkError(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func closeDB(db *sql.DB) {
+	db.Close()
 }

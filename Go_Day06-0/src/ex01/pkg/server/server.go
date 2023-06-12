@@ -2,7 +2,7 @@ package server
 
 import (
 	"encoding/json"
-	"ex01/server/pkg/db/users"
+	"ex01/pkg/db/admins"
 	"fmt"
 	"log"
 	"net/http"
@@ -23,15 +23,15 @@ func rootHandler() http.HandlerFunc {
 
 func adminHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var newUser users.UserData
+		var newAdmin admins.AdminData
 
-		err := json.NewDecoder(r.Body).Decode(&newUser)
+		err := json.NewDecoder(r.Body).Decode(&newAdmin)
 		if err != nil {
 			http.Error(w, "Ошибка при чтении JSON-запроса", http.StatusBadRequest)
 			return
 		}
-		users.AddNewUser(newUser)
-		fmt.Println(newUser)
+		admins.AddNewAdmin(newAdmin)
+		fmt.Println(newAdmin)
 		fmt.Fprintln(w, "Привет, админ!")
 	}
 }

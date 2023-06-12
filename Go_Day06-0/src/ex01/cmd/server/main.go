@@ -1,6 +1,6 @@
 package main
 
-import "ex01/server/pkg/server"
+import "ex01/pkg/server"
 
 func main() {
 	server.Server()
