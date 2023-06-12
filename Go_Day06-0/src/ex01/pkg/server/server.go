@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func Server() {
@@ -29,21 +30,37 @@ func PostsHandlersFunc() {
 // view post
 func viewPostHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// var newPost post.Post
+		pageStr := r.FormValue("page")
+		page, err := strconv.Atoi(pageStr)
+		if err != nil {
+			http.Error(w, "Invalid page parameter", http.StatusBadRequest)
+			return
+		}
 
-		// err := json.NewDecoder(r.Body).Decode(&newPost)
-		// if err != nil {
-		// 	http.Error(w, "Ошибка при чтении JSON-запроса", http.StatusBadRequest)
-		// 	return
-		// }
-		// err = newPost.NewPost()
-		// if err != nil {
-		// 	http.Error(w, fmt.Sprintf("Ошибка при создании поста: %s", err), http.StatusBadRequest)
-		// 	return
-		// }
-		// fmt.Fprintln(w, "Пост успешно создан!")
 		var newPost post.Post
-		newPost.GetPosts()
+		result, err := newPost.GetPosts()
+		if err != nil {
+			http.Error(w, "Ошибка при чтении bd", http.StatusBadRequest)
+			return
+		}
+
+		lnResult := len(result)
+		if page <= 0 || (lnResult-page*3) < -2 {
+			http.Error(w, "Invalid page parameter", http.StatusBadRequest)
+			return
+		}
+		start, end := 0, lnResult-(page*3)
+		start = end + 3
+		if end < 0 {
+			end = 0
+		}
+
+		for i := start - 1; i >= end; i-- {
+			w.Write([]byte(fmt.Sprintf("\tPost№ %d\n\n", i)))
+			w.Write([]byte(fmt.Sprintf("\tHeader: %s\n", result[i].Header)))
+			w.Write([]byte(fmt.Sprintf("\tContent:\n%s\n", result[i].Content)))
+			w.Write([]byte(fmt.Sprintf("\n\n\n")))
+		}
 	}
 }
 

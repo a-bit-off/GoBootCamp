@@ -55,21 +55,36 @@ func (p Post) NewPost() error {
 }
 
 func (p Post) GetPosts() ([]Post, error) {
+	err := p.connectToPostgreSQL()
+	if err != nil {
+		return []Post{}, err
+	}
+
+	err = p.createPostTable()
+	if err != nil {
+		return []Post{}, err
+	}
+
 	getPostsQuery := `
 		SELECT header, content FROM PostTable
 	`
+
 	req, err := p.db.Query(getPostsQuery)
 	if err != nil {
 		return []Post{}, err
 	}
-	fmt.Println(req)
+	defer req.Close()
 
-	// n, err := req.RowsAffected()
-	// if err != nil {
-	// 	return []Post{}, err
-	// }
-
-	return []Post{}, nil
+	var result []Post
+	for req.Next() {
+		res := Post{}
+		err := req.Scan(&res.Header, &res.Content)
+		if err != nil {
+			return []Post{}, err
+		}
+		result = append(result, res)
+	}
+	return result, nil
 }
 
 // подключение к базе данных
