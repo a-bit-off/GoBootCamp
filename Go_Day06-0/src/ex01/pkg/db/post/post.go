@@ -54,6 +54,24 @@ func (p Post) NewPost() error {
 	return nil
 }
 
+func (p Post) GetPosts() ([]Post, error) {
+	getPostsQuery := `
+		SELECT header, content FROM PostTable
+	`
+	req, err := p.db.Query(getPostsQuery)
+	if err != nil {
+		return []Post{}, err
+	}
+	fmt.Println(req)
+
+	// n, err := req.RowsAffected()
+	// if err != nil {
+	// 	return []Post{}, err
+	// }
+
+	return []Post{}, nil
+}
+
 // подключение к базе данных
 func (p *Post) connectToPostgreSQL() error {
 	psqlConn := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable",

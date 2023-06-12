@@ -22,11 +22,33 @@ func Server() {
 
 // post
 func PostsHandlersFunc() {
-	http.HandleFunc("/post/new-post", postHandler())
-	// http.HandleFunc("/post", postHandler())
+	http.HandleFunc("/post", viewPostHandler())
+	http.HandleFunc("/post/new-post", newPostHandler())
 }
 
-func postHandler() http.HandlerFunc {
+// view post
+func viewPostHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// var newPost post.Post
+
+		// err := json.NewDecoder(r.Body).Decode(&newPost)
+		// if err != nil {
+		// 	http.Error(w, "Ошибка при чтении JSON-запроса", http.StatusBadRequest)
+		// 	return
+		// }
+		// err = newPost.NewPost()
+		// if err != nil {
+		// 	http.Error(w, fmt.Sprintf("Ошибка при создании поста: %s", err), http.StatusBadRequest)
+		// 	return
+		// }
+		// fmt.Fprintln(w, "Пост успешно создан!")
+		var newPost post.Post
+		newPost.GetPosts()
+	}
+}
+
+// new post
+func newPostHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var newPost post.Post
 
