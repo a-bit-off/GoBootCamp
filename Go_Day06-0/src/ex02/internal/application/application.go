@@ -42,7 +42,7 @@ var postsCountOnPage = 3 // колличество постов на стран�
 var allPostsCount int    // колличество всех постов
 
 func NewApp(ctx context.Context, dbpool *pgxpool.Pool) *app {
-	return &app{ctx, repository.NewRepository(dbpool), make(map[string]repository.User), rate.NewLimiter(2, 4)}
+	return &app{ctx, repository.NewRepository(dbpool), make(map[string]repository.User), rate.NewLimiter(10, 100)}
 }
 
 func (a app) CreateAllTables() (err error) {
@@ -68,28 +68,28 @@ func (a app) Routes(r *httprouter.Router) {
 	r.ServeFiles("/../public/*filepath", http.Dir("public"))
 
 	// startPage
-	r.GET("/", a.LimitHandler(a.StartPage))
+	r.GET("/", a.rateLimiter(a.StartPage))
 
 	// newPost
-	r.GET("/newPost", a.authorized(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	r.GET("/newPost", a.rateLimiter(a.authorized(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		a.NewPostPage(w, "")
-	}))
-	r.POST("/newPost", a.authorized(a.NewPost))
+	})))
+	r.POST("/newPost", a.rateLimiter(a.authorized(a.NewPost)))
 
 	// login
-	r.GET("/login", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		a.LoginPage(rw, "")
-	})
+	r.GET("/login", a.rateLimiter(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		a.LoginPage(w, "")
+	}))
 	r.POST("/login", a.Login)
 
 	//logout
-	r.GET("/logout", a.LimitHandler(a.Logout))
+	r.GET("/logout", a.rateLimiter(a.Logout))
 
 	//signup
-	r.GET("/signup", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		a.SignupPage(rw, "")
-	})
-	r.POST("/signup", a.Signup)
+	r.GET("/signup", a.rateLimiter(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		a.SignupPage(w, "")
+	}))
+	r.POST("/signup", a.rateLimiter(a.Signup))
 }
 
 func (a app) StartPage(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -99,7 +99,7 @@ func (a app) StartPage(w http.ResponseWriter, r *http.Request, p httprouter.Para
 		return
 	}
 
-	posts, err := a.repo.GetNPosts(a.ctx, page*3, postsCountOnPage)
+	posts, err := a.repo.GetNPosts(a.ctx, (page-1)*3)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
@@ -111,9 +111,13 @@ func (a app) StartPage(w http.ResponseWriter, r *http.Request, p httprouter.Para
 		http.Error(w, err.Error(), 400)
 		return
 	}
+	last := allPostsCount / postsCountOnPage
+	if allPostsCount%postsCountOnPage != 0 {
+		last++
+	}
 
 	pp := postPage{page, posts,
-		buttons{page - 1, page + 1, allPostsCount / postsCountOnPage}}
+		buttons{page - 1, page + 1, last}}
 	err = tmpl.Execute(w, pp)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
@@ -150,20 +154,31 @@ func (a app) NewPost(w http.ResponseWriter, r *http.Request, p httprouter.Params
 		return
 	}
 
-	// TODO userId сделать через cach
-	err := a.repo.AddNewPost(a.ctx, 0, header, content)
+	token, err := readCookie("token", r)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	user, ok := a.cache[token]
+	if !ok {
+		http.Error(w, fmt.Sprintf("Пользователь не определен!"), 400)
+		return
+	}
+	err = a.repo.AddNewPost(a.ctx, user.Login, header, content)
 	if err != nil {
 		a.NewPostPage(w, fmt.Sprintf("Ошибка содания нового поста %s", err.Error()))
 		return
 	}
 	allPostsCount++
+	r.Form.Add("page", "1")
+	a.StartPage(w, r, p)
 }
 
-func (a app) LoginPage(rw http.ResponseWriter, message string) {
+func (a app) LoginPage(w http.ResponseWriter, message string) {
 	lp := filepath.Join("../public", "html", "login.html")
 	tmpl, err := template.ParseFiles(lp)
 	if err != nil {
-		http.Error(rw, err.Error(), 400)
+		http.Error(w, err.Error(), 400)
 		return
 	}
 
@@ -171,18 +186,18 @@ func (a app) LoginPage(rw http.ResponseWriter, message string) {
 		Message string
 	}
 	data := answer{message}
-	err = tmpl.ExecuteTemplate(rw, "login", data)
+	err = tmpl.ExecuteTemplate(w, "login", data)
 	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 }
 
-func (a app) Login(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func (a app) Login(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	login := r.FormValue("login")
 	password := r.FormValue("password")
 	if login == "" || password == "" {
-		http.Error(rw, fmt.Sprintf("Необходимо указать логин и пароль!"), 400)
+		http.Error(w, fmt.Sprintf("Необходимо указать логин и пароль!"), 400)
 		return
 	}
 
@@ -190,7 +205,7 @@ func (a app) Login(rw http.ResponseWriter, r *http.Request, p httprouter.Params)
 	hashedPassword := hex.EncodeToString(hash[:])
 	user, err := a.repo.Login(a.ctx, login, hashedPassword)
 	if err != nil {
-		a.LoginPage(rw, fmt.Sprintf("Вы ввели неверный логин или пароль!: %s", err.Error()))
+		a.LoginPage(w, fmt.Sprintf("Вы ввели неверный логин или пароль!: %s", err.Error()))
 		return
 	}
 
@@ -205,26 +220,26 @@ func (a app) Login(rw http.ResponseWriter, r *http.Request, p httprouter.Params)
 	expiration := time.Now().Add(livingTime)
 	// кука будет жить 1 час
 	cookie := http.Cookie{Name: "token", Value: url.QueryEscape(hashedToken), Expires: expiration}
-	http.SetCookie(rw, &cookie)
+	http.SetCookie(w, &cookie)
 
-	http.Redirect(rw, r, "/?page=1", http.StatusSeeOther)
+	http.Redirect(w, r, "/?page=1", http.StatusSeeOther)
 }
 
-func (a app) Logout(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func (a app) Logout(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	for _, v := range r.Cookies() {
 		c := http.Cookie{
 			Name:   v.Name,
 			MaxAge: -1}
-		http.SetCookie(rw, &c)
+		http.SetCookie(w, &c)
 	}
-	http.Redirect(rw, r, "/login", http.StatusSeeOther)
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
-func (a app) SignupPage(rw http.ResponseWriter, message string) {
+func (a app) SignupPage(w http.ResponseWriter, message string) {
 	lp := filepath.Join("../public", "html", "signup.html")
 	tmpl, err := template.ParseFiles(lp)
 	if err != nil {
-		http.Error(rw, err.Error(), 400)
+		http.Error(w, err.Error(), 400)
 		return
 	}
 
@@ -232,14 +247,14 @@ func (a app) SignupPage(rw http.ResponseWriter, message string) {
 		Message string
 	}
 	data := answer{message}
-	err = tmpl.ExecuteTemplate(rw, "signup", data)
+	err = tmpl.ExecuteTemplate(w, "signup", data)
 	if err != nil {
-		http.Error(rw, err.Error(), 400)
+		http.Error(w, err.Error(), 400)
 		return
 	}
 }
 
-func (a app) Signup(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func (a app) Signup(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	// получаем данные формы
 	name := strings.TrimSpace(r.FormValue("name"))
 	surname := strings.TrimSpace(r.FormValue("surname"))
@@ -249,13 +264,13 @@ func (a app) Signup(rw http.ResponseWriter, r *http.Request, p httprouter.Params
 
 	// проверяем валидность данных
 	if name == "" || surname == "" || login == "" || password == "" {
-		a.SignupPage(rw, "Все поля должны быть заполнены!")
+		a.SignupPage(w, "Все поля должны быть заполнены!")
 		return
 	}
 
 	// сравниваем пароли
 	if password != password2 {
-		a.SignupPage(rw, "Пароли не совпадают! Попробуйте еще")
+		a.SignupPage(w, "Пароли не совпадают! Попробуйте еще")
 		return
 	}
 
@@ -266,26 +281,26 @@ func (a app) Signup(rw http.ResponseWriter, r *http.Request, p httprouter.Params
 	// добавляем нового пользователя
 	err := a.repo.AddNewUser(a.ctx, name, surname, login, hashedPassword)
 	if err != nil {
-		a.SignupPage(rw, fmt.Sprintf("Ошибка создания пользователя %s", err.Error()))
+		a.SignupPage(w, fmt.Sprintf("Ошибка создания пользователя %s", err.Error()))
 		return
 	}
-	a.LoginPage(rw, fmt.Sprintf("%s, Вы успешно зарегистрированы!", name))
+	a.LoginPage(w, fmt.Sprintf("%s, Вы успешно зарегистрированы!", name))
 }
 
 func (a app) authorized(next httprouter.Handle) httprouter.Handle {
-	return func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		token, err := readCookie("token", r)
 		// если нет куки с токеном - пользователь отправляется на авторизацию
 		if err != nil {
-			http.Redirect(rw, r, "/login", http.StatusSeeOther)
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
 		// если токен есть, но его нет в кеше - пользователь отправляется на авторизацию
 		if _, ok := a.cache[token]; !ok {
-			http.Redirect(rw, r, "/login", http.StatusSeeOther)
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
-		next(rw, r, p)
+		next(w, r, p)
 	}
 }
 
@@ -302,7 +317,7 @@ func readCookie(name string, r *http.Request) (value string, err error) {
 	return
 }
 
-func (a app) LimitHandler(next httprouter.Handle) httprouter.Handle {
+func (a app) rateLimiter(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		if !a.lim.Allow() {
 			http.Error(w, fmt.Sprintf("Too many requests"), http.StatusTooManyRequests)

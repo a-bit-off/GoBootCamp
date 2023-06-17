@@ -24,8 +24,8 @@ select id, login, name, surname from users where login = $1 AND hashed_password 
 var QueryCreateTablePosts = `
 create table if not exists posts
 (
-    id      bigint primary key generated always as identity,
-    userId   	bigint,
+    id      	bigint primary key generated always as identity,
+    userLogin   varchar(200) not null,
     created 	TIMESTAMP DEFAULT NOW(),
     header    	varchar(200) not null,
     content 	varchar(200) not null
@@ -33,18 +33,14 @@ create table if not exists posts
 `
 
 var QueryAddNewPost = `
-insert into posts (userId, created, header, content)
+insert into posts (userLogin, created, header, content)
 values ($1, $2, $3, $4);
 `
 
 var QueryGetNPosts = `
-SELECT userId, created, header, content FROM posts
-ORDER BY id
-OFFSET (SELECT COUNT(*) FROM posts) - $1 LIMIT $2;
-`
-
-var QueryGetAllPosts = `
-SELECT userId, created, header, content FROM posts;
+SELECT userLogin, created, header, content
+FROM ( SELECT * FROM posts ORDER BY id DESC LIMIT 3 OFFSET $1) subquery
+ORDER BY created DESC;
 `
 
 var QueryGetPostsCount = `

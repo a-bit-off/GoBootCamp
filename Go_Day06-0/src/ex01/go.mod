@@ -5,7 +5,6 @@ go 1.19
 require (
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/julienschmidt/httprouter v1.3.0
-	golang.org/x/time v0.3.0
 )
 
 require (

@@ -1,0 +1,1 @@
+for i in {1..120}; do curl http://localhost:8888/logout; done
