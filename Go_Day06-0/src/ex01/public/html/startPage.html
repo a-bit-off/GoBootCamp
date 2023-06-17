@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>StartPage</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			text-align: center;
+			margin-top: 60px;
+			padding: 20px;
+			display: flex;
+			flex-direction: column;
+			min-height: 100vh;
+		}
+
+		.container {
+			max-width: 600px;
+			margin: 0 auto;
+			text-align: left;
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+		}
+
+		.container > div {
+			margin-bottom: 100px;
+			padding: 20px;
+			background-color: #f2f2f2;
+			border-radius: 5px;
+		}
+
+		.container > div > div {
+			margin-bottom: 30px;
+		}
+
+		.header {
+			font-size: 20px;
+			font-weight: bold;
+		}
+
+		.content {
+			font-size: 16px;
+		}
+
+		.pagination {
+			margin-top: 30px;
+		}
+
+		.pagination a {
+			display: inline-block;
+			padding: 10px 20px;
+			background-color: #4CAF50;
+			color: white;
+			text-decoration: none;
+			margin-right: 10px;
+			border-radius: 5px;
+		}
+
+		.menu {
+			position: absolute;
+			top: 20px;
+			right: 20px;
+		}
+
+		.menu a {
+			margin-right: 10px;
+			padding: 10px 20px;
+			background-color: #4CAF50;
+			color: white;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			text-decoration: none;
+		}
+
+		@media (max-width: 1000px) {
+			.container {
+				padding: 10px;
+			}
+		}
+	</style>
+</head>
+<body>
+<div class="menu">
+	<a href="/login">Login</a>
+	<a href="/logout">Logout</a>
+	<a href="/newPost">New Post</a>
+</div>
+
+<div class="container">
+	{{ range .Posts }}
+	<div>
+		<div class="created">{{ .Created }}</div>
+		<div class="header">{{ .Header }}</div>
+		<div class="content">{{ .Content }}</div>
+	</div>
+	{{ end }}
+</div>
+<div class="pagination">
+	{{ if ne .Page 1 }}
+	<a href="/?page={{ .Buttons.Previous }}">Previous</a>
+	{{ end }}
+
+	{{ if ne .Page .Buttons.Last }}
+	<a href="/?page={{ .Buttons.Next }}">Next</a>
+	{{ end }}
+
+	<a href="/?page={{ .Buttons.Last }}">Last</a>
+</div>
+</body>
+</html>

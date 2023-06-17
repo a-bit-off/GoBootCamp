@@ -1,0 +1,100 @@
+
+{{define "newPost"}}
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Новый пост</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background-color: #f2f2f2;
+			margin: 0;
+			padding: 20px;
+		}
+
+		.container {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 100vh;
+			text-align: center;
+		}
+
+		h1 {
+			margin-bottom: 20px;
+		}
+
+		form {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		label {
+			font-weight: bold;
+			margin-bottom: 10px;
+		}
+
+		textarea {
+			width: 100%;
+			padding: 10px;
+			margin-bottom: 10px;
+			resize: vertical;
+		}
+
+		input[type="submit"] {
+			padding: 10px 20px;
+			background-color: #4CAF50;
+			color: white;
+			border: none;
+			cursor: pointer;
+			border-radius: 5px;
+		}
+
+		input[type="submit"]:hover {
+			background-color: #45a049;
+		}
+
+		.menu {
+			position: absolute;
+			top: 20px;
+			right: 20px;
+		}
+
+		.menu a {
+			margin-right: 10px;
+			padding: 10px 20px;
+			background-color: #4CAF50;
+			color: white;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+<div class="menu">
+	<a href="/login">Login</a>
+	<a href="/logout">Logout</a>
+	<a href="/?page=1">Start Page</a>
+</div>
+
+<div class="container">
+	<h1>Добавьте новый пост!</h1>
+
+	<form id="newPostForm" name="newPostForm" action="/newPost" method="post" class="mt-4">
+		<label for="header">Заголовок публикации:</label><br>
+		<textarea id="header" name="header" rows="2" cols="20"></textarea><br><br>
+		<label for="content">Содержание публикации:</label><br>
+		<textarea id="content" name="content" rows="4" cols="50"></textarea><br><br>
+
+		<input type="submit" value="Добавить">
+	</form>
+</div>
+</body>
+</html>
+
+
+{{end}}

@@ -1,0 +1,98 @@
+{{define "signup"}}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Регистрация</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 300px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .menu {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .menu a {
+            margin-right: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="menu">
+    <a href="/login">Login</a>
+    <a href="/logout">Logout</a>
+    <a href="/?page=1">Start Page</a>
+</div>
+<div class="container">
+    <h1>Регистрация</h1>
+
+    <form id="signUpForm" name="signUpForm" action="/signup" method="post">
+        <input type="text" id="name" name="name" placeholder="Имя" required>
+        <input type="text" id="surname" name="surname" placeholder="Фамилия" required>
+        <input type="text" id="login" name="login" placeholder="Логин" required>
+        <input type="password" id="password" name="password" placeholder="Пароль" required>
+        <input type="password" id="password2" name="password2" placeholder="Повторите пароль" required>
+
+        <button type="submit" name="submitBtn">Зарегистрироваться</button>
+    </form>
+
+    {{if .}}
+    <div>{{.Message}}</div>
+    {{end}}
+</div>
+</body>
+</html>
+
+{{end}}

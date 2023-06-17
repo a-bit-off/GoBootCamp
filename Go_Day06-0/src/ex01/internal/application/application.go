@@ -5,11 +5,10 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
-	"ex02/internal/repository"
+	"ex01/internal/repository"
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/julienschmidt/httprouter"
-	"golang.org/x/time/rate"
 	"html/template"
 	"net/http"
 	"net/url"
@@ -23,7 +22,6 @@ type app struct {
 	ctx   context.Context
 	repo  *repository.Repository
 	cache map[string]repository.User
-	lim   *rate.Limiter
 }
 
 type postPage struct {
@@ -42,7 +40,7 @@ var postsCountOnPage = 3 // колличество постов на стран�
 var allPostsCount int    // колличество всех постов
 
 func NewApp(ctx context.Context, dbpool *pgxpool.Pool) *app {
-	return &app{ctx, repository.NewRepository(dbpool), make(map[string]repository.User), rate.NewLimiter(2, 4)}
+	return &app{ctx, repository.NewRepository(dbpool), make(map[string]repository.User)}
 }
 
 func (a app) CreateAllTables() (err error) {
@@ -68,7 +66,7 @@ func (a app) Routes(r *httprouter.Router) {
 	r.ServeFiles("/../public/*filepath", http.Dir("public"))
 
 	// startPage
-	r.GET("/", a.LimitHandler(a.StartPage))
+	r.GET("/", a.StartPage)
 
 	// newPost
 	r.GET("/newPost", a.authorized(func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -83,7 +81,7 @@ func (a app) Routes(r *httprouter.Router) {
 	r.POST("/login", a.Login)
 
 	//logout
-	r.GET("/logout", a.LimitHandler(a.Logout))
+	r.GET("/logout", a.Logout)
 
 	//signup
 	r.GET("/signup", func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -300,14 +298,4 @@ func readCookie(name string, r *http.Request) (value string, err error) {
 	str := cookie.Value
 	value, _ = url.QueryUnescape(str)
 	return
-}
-
-func (a app) LimitHandler(next httprouter.Handle) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		if !a.lim.Allow() {
-			http.Error(w, fmt.Sprintf("Too many requests"), http.StatusTooManyRequests)
-			return
-		}
-		next(w, r, p)
-	}
 }
