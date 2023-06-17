@@ -27,9 +27,6 @@ func (r *Repository) Login(ctx context.Context, login, hashedPassword string) (u
 
 	// сканируем данные, в случае если в бд будет отсутвовать user -> err != nil
 	err = row.Scan(&u.Id, &u.Login, &u.Name, &u.Surname)
-	if err != nil {
-		return
-	}
 	return
 }
 

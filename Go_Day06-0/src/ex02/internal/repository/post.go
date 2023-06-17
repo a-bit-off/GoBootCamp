@@ -48,3 +48,9 @@ func (r *Repository) GetNPosts(ctx context.Context, page, postsCountOnPage int) 
 	}
 	return
 }
+
+func (r *Repository) GetAllPostsCount(ctx context.Context) (count int, err error) {
+	row := r.pool.QueryRow(ctx, db.QueryGetPostsCount)
+	err = row.Scan(&count)
+	return
+}

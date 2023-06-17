@@ -46,3 +46,7 @@ OFFSET (SELECT COUNT(*) FROM posts) - $1 LIMIT $2;
 var QueryGetAllPosts = `
 SELECT userId, created, header, content FROM posts;
 `
+
+var QueryGetPostsCount = `
+SELECT COUNT(*) AS postsCount FROM posts;
+`
