@@ -103,7 +103,7 @@ func (a app) StartPage(w http.ResponseWriter, r *http.Request, p httprouter.Para
 		return
 	}
 
-	lp := filepath.Join("../public", "html", "post.html.go")
+	lp := filepath.Join("../public", "html", "startPage.html")
 	tmpl, err := template.ParseFiles(lp)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
@@ -120,7 +120,7 @@ func (a app) StartPage(w http.ResponseWriter, r *http.Request, p httprouter.Para
 }
 
 func (a app) NewPostPage(w http.ResponseWriter, message string) {
-	lp := filepath.Join("../public", "html", "newPost.html.go")
+	lp := filepath.Join("../public", "html", "newPost.html")
 	tmpl, err := template.ParseFiles(lp)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
@@ -158,7 +158,7 @@ func (a app) NewPost(w http.ResponseWriter, r *http.Request, p httprouter.Params
 }
 
 func (a app) LoginPage(rw http.ResponseWriter, message string) {
-	lp := filepath.Join("../public", "html", "login.html.go")
+	lp := filepath.Join("../public", "html", "login.html")
 	tmpl, err := template.ParseFiles(lp)
 	if err != nil {
 		http.Error(rw, err.Error(), 400)
@@ -219,7 +219,7 @@ func (a app) Logout(rw http.ResponseWriter, r *http.Request, p httprouter.Params
 }
 
 func (a app) SignupPage(rw http.ResponseWriter, message string) {
-	lp := filepath.Join("../public", "html", "signup.html.go")
+	lp := filepath.Join("../public", "html", "signup.html")
 	tmpl, err := template.ParseFiles(lp)
 	if err != nil {
 		http.Error(rw, err.Error(), 400)
