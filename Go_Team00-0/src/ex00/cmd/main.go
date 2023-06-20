@@ -19,13 +19,12 @@ type TransmitterServer struct {
 
 func (ts TransmitterServer) Connection(ctx context.Context, req *proto.Request) (resp *proto.Response, err error) {
 	// SessionId
+	resp = &proto.Response{}
 	id, err := uuid.NewV4()
 	if err != nil {
 		return
 	}
-
-	resp.SessionId = fmt.Sprintf("%s", id)
-	resp.SessionId = "12"
+	resp.SessionId = id.String()
 
 	// Frequency
 	minMean := -10.0
@@ -42,7 +41,7 @@ func (ts TransmitterServer) Connection(ctx context.Context, req *proto.Request) 
 	resp.UTC = timestamppb.Now()
 
 	// stdout
-	_, err = fmt.Printf("SessionId: %s\nFrequency: %s\nUTC: %s",
+	_, err = fmt.Printf("SessionId: %s\nFrequency: %f\nUTC: %s\n",
 		resp.SessionId, resp.Frequency, resp.UTC.AsTime())
 	if err != nil {
 		return

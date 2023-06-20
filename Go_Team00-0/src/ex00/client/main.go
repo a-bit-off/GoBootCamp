@@ -13,10 +13,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("FIRST ERROR")
 
+	ctx := context.Background()
 	clinet := proto.NewTransmitterClient(cc)
-	resp, err := clinet.Connection(context.Background(), &proto.Request{})
+	resp, err := clinet.Connection(ctx, &proto.Request{})
 	if err != nil {
 		log.Fatal(err)
 	}
