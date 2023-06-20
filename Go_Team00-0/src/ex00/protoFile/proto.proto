@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package ex00;
+
+import "google/protobuf/timestamp.proto";
+option go_package = "./proto";
+
+service Transmitter {
+  rpc Connection(Request) returns (Response) {}
+}
+
+message Request{}
+message Response{
+    string session_id = 1;
+    double frequency = 2;
+    google.protobuf.Timestamp UTC = 3;
+}
+
+//    protoc --go_out=pkg --go_opt=paths=source_relative \
+//    --go-grpc_out=pkg --go-grpc_opt=paths=source_relative \
+//    proto/proto.proto
